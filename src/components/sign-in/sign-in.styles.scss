@@ -1,0 +1,13 @@
+.sign-in {
+  width: 450px;
+  .title {
+    padding: 10px 0;
+  }
+  .subtitle {
+    padding-bottom: 10px;
+  }
+  .buttons {
+    display: flex;
+    justify-content: space-between;
+  }
+}
