@@ -2,41 +2,24 @@ import firebase from 'firebase/app';
 import 'firebase/firestore';
 import 'firebase/auth';
 
-const firebaseConfig = {
-  apiKey: "AIzaSyBYGJumZOBPYKqHzWY7-toNyopx8DbanPw",
-  authDomain: "crown-db-2a186.firebaseapp.com",
-  databaseURL: "https://crown-db-2a186.firebaseio.com",
-  projectId: "crown-db-2a186",
-  storageBucket: "crown-db-2a186.appspot.com",
-  messagingSenderId: "397333978682",
-  appId: "1:397333978682:web:f62dba969d519b9c1e1f03",
-  measurementId: "G-B561J3TF5Z"
+const config = {
+  apiKey: 'AIzaSyCdHT-AYHXjF7wOrfAchX4PIm3cSj5tn14',
+  authDomain: 'crwn-db.firebaseapp.com',
+  databaseURL: 'https://crwn-db.firebaseio.com',
+  projectId: 'crwn-db',
+  storageBucket: 'crwn-db.appspot.com',
+  messagingSenderId: '850995411664',
+  appId: '1:850995411664:web:7ddc01d597846f65'
 };
 
-firebase.initializeApp(firebaseConfig);
-
-export const auth = firebase.auth();
-export const firestore = firebase.firestore();
-
+firebase.initializeApp(config);
 
 export const createUserProfileDocument = async (userAuth, additionalData) => {
   if (!userAuth) return;
 
-  const collectionRef = firestore.collection('users')
-  // console.log({collectionRef})
-  const collectionSnapShot = await collectionRef.get()
-  const usersArray = collectionSnapShot.docs.map(doc => doc.data())
-  // console.log(usersArray)
-
   const userRef = firestore.doc(`users/${userAuth.uid}`);
-  // console.log({userRef})
-
 
   const snapShot = await userRef.get();
-  // console.log(snapShot.data())
-
-
-
 
   if (!snapShot.exists) {
     const { displayName, email } = userAuth;
@@ -52,47 +35,48 @@ export const createUserProfileDocument = async (userAuth, additionalData) => {
       console.log('error creating user', error.message);
     }
   }
+
   return userRef;
 };
 
-// this is code for adding collections to firebase
-export const addCollectionAndDocuments = async (collectionKey, collectionArray) => {
+export const addCollectionAndDocuments = async (
+  collectionKey,
+  objectsToAdd
+) => {
   const collectionRef = firestore.collection(collectionKey);
 
   const batch = firestore.batch();
-  collectionArray.forEach(collection => {
+  objectsToAdd.forEach(obj => {
     const newDocRef = collectionRef.doc();
-    console.log({ newDocRef })
-    batch.set(newDocRef, collection);
-  })
+    batch.set(newDocRef, obj);
+  });
 
   return await batch.commit();
-}
+};
 
-//  this code is for collection snapshot to map
-export const convertCollectionsSnapshotToMap = (collectionsArray) => {
-  const transformedCollections = collectionsArray.docs.map(doc => {
-    const { title, items } = doc.data()
-    console.log(title)  
+export const convertCollectionsSnapshotToMap = collections => {
+  const transformedCollection = collections.docs.map(doc => {
+    const { title, items } = doc.data();
+
     return {
       routeName: encodeURI(title.toLowerCase()),
       id: doc.id,
       title,
       items
-    }
-  })
+    };
+  });
 
-  console.log(transformedCollections)
+  return transformedCollection.reduce((accumulator, collection) => {
+    accumulator[collection.title.toLowerCase()] = collection;
+    return accumulator;
+  }, {});
+};
 
-  return transformedCollections.reduce((accumulator,currentObj) => {
-    accumulator[currentObj.title.toLowerCase()] = currentObj
-    return accumulator
-  },{})
-}
+export const auth = firebase.auth();
+export const firestore = firebase.firestore();
 
 const provider = new firebase.auth.GoogleAuthProvider();
 provider.setCustomParameters({ prompt: 'select_account' });
 export const signInWithGoogle = () => auth.signInWithPopup(provider);
-
 
 export default firebase;
